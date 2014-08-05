@@ -1,0 +1,47 @@
+---
+## FIXME: check "usetor" variable and then replace commands with "usewithtor"
+
+- name: ensure torproject gpg signing key is in apt
+  sudo: true
+  apt_key: >
+    state=present
+    data="{{ lookup('file', 'tor-signing-key.pub') }}"
+
+## FIXME: get the key from internet, verify fingerprint
+#- name: ensure torproject gpg signing key is in apt
+#  sudo: true
+#  apt_key: >
+#    state=present
+#    id=886DDD89
+#    keyserver=keys.gnupg.net
+# fingerprint:
+# A3C4 F0F9 79CA A22C DBA8  F512 EE8C BC9E 886D DD89
+
+- name: ensure tor repository is present
+  sudo: true
+  apt_repository: >
+      repo="{{ item }}"
+      state=present
+      update_cache=yes
+  with_items:
+      - deb http://deb.torproject.org/torproject.org wheezy main
+
+- name: ensure tor and tor keyring packages are installed
+  sudo: true
+  apt:
+    pkg: "{{ item }}"
+    state: latest
+    install_recommends: no
+  with_items: ["deb.torproject.org-keyring", "tor", "torsocks"]
+  when: usetor is not defined or not usetor
+
+- name: ensure tor and tor keyring packages are installed (usewithtor)
+  sudo: true
+  shell: usewithtor apt-get install tor deb.torproject.org-keyring torsocks --no-install-recommends -q -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"
+  environment: 
+    DEBIAN_FRONTEND: noninteractive
+  when: usetor is defined and usetor
+
+- name: ensure tor is running
+  sudo: true
+  service: name=tor state=running

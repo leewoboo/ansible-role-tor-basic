@@ -1,0 +1,4 @@
+---
+
+- include: install-tor.yml
+- include: configure-tor.yml

@@ -1,0 +1,16 @@
+---
+
+## configuration based on https://git-tails.immerda.ch/tails/plain/config/chroot_local-includes/etc/tor/torrc
+- name: configure tor 
+  sudo: true
+  lineinfile: >
+    state=present
+    dest=/etc/tor/torrc
+    regexp="{{ item.regexp }}"
+    line="{{ item.line }}"
+  with_items:
+    - { regexp: "^SocksPort 127.0.0.1", line: "SocksPort 127.0.0.1:9050 IsolateDestAddr IsolateDestPort" }
+    - { regexp: "^ControlPort 127.0.0.1", line: "ControlPort 127.0.0.1:9051" }
+    - { regexp: "^DNSPort 127.0.0.1", line: "DNSPort 127.0.0.1:5353" }
+    - { regexp: "^AutomapHostsOnResolve", line: "AutomapHostsOnResolve 1" }
+    - { regexp: "^AutomapHostsSuffixes", line: "AutomapHostsSuffixes .exit,.onion" }
